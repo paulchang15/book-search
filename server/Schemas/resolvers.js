@@ -6,10 +6,15 @@ const resolvers = {
   Query: {
     me: async (parent, args, context) => {
       // return User.findOne({ username });
+      if (context.user) {
+        const userData = await User.findOne({ _id: context.user._id }).select(
+          "-__v -password"
+        );
 
-      const userData = await User.findOne({ _id: context.user._id });
+        return userData;
+      }
 
-      return userData;
+      throw new AuthenticationError("not logged in!");
     },
   },
 
@@ -37,19 +42,24 @@ const resolvers = {
       return { token, user };
     },
 
-    saveBook: async (parent, { user }, { bookData }) => {
-      try {
-        const updatedUser = await User.findOneAndUpdate(
-          { _id: user._id },
-          { $addToSet: { savedBooks: bookData } },
-          { new: true, runValidators: true }
+    saveBook: async (parent, { bookData }, context) => {
+      console.log(context);
+      if (context.user) {
+        console.log("This is the bookData", bookData);
+        const updatedUser = await User.findByIdAndUpdate(
+          { _id: context.user._id },
+          { $push: { savedBooks: bookData } },
+          { new: true }
         );
 
+        console.log("this is the updated User", updatedUser);
         return updatedUser;
-      } catch (e) {
-        console.log(e);
-        return res.status(400);
       }
+
+      throw new AuthenticationError("no user with this pw!");
+      //  console.log(e);
+      //       return res.status(400);
+      //     }
     },
 
     deleteBook: async (parent, { user }, { bookId }) => {

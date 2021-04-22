@@ -7,13 +7,14 @@ import {
   Button,
 } from "react-bootstrap";
 
-import { getMe, deleteBook } from "../utils/API";
+// import { getMe, deleteBook } from "../utils/API";
 import Auth from "../utils/auth";
 import { removeBookId } from "../utils/localStorage";
-import { useQuery } from "@apollo/react-hooks";
+import { useQuery, useMutation } from "@apollo/react-hooks";
 import { GET_ME } from "../utils/queries";
+import { REMOVE_BOOK } from "../utils/mutations";
 const SavedBooks = () => {
-  const [userData, setUserData] = useState({});
+  // const [userData, setUserData] = useState({});
 
   // // use this to determine if `useEffect()` hook needs to run again
   // const userDataLength = Object.keys(userData).length;
@@ -44,9 +45,9 @@ const SavedBooks = () => {
   // }, [userDataLength]);
 
   const { loading, data } = useQuery(GET_ME);
-
-  const userData = data?.userData || [];
-
+  const [deleteBook, { error }] = useMutation(REMOVE_BOOK);
+  const userData = data;
+  console.log(userData);
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -59,16 +60,12 @@ const SavedBooks = () => {
     }
 
     try {
-      const response = await deleteBook(bookId, token);
-
-      if (!response.ok) {
-        throw new Error("something went wrong!");
-      }
-
-      const updatedUser = await response.json();
-      setUserData(updatedUser);
+      const { data } = await deleteBook({
+        variables: { bookId },
+      });
       // upon success, remove book's id from localStorage
       removeBookId(bookId);
+      Auth.loggedIn(token);
     } catch (err) {
       console.error(err);
     }
@@ -87,6 +84,7 @@ const SavedBooks = () => {
         </Container>
       </Jumbotron>
       <Container>
+        {/* may need to add userData.me */}
         <h2>
           {userData.savedBooks.length
             ? `Viewing ${userData.savedBooks.length} saved ${
@@ -95,6 +93,7 @@ const SavedBooks = () => {
             : "You have no saved books!"}
         </h2>
         <CardColumns>
+          {/* may need to add userData.me */}
           {userData.savedBooks.map((book) => {
             return (
               <Card key={book.bookId} border="dark">
