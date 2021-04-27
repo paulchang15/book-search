@@ -62,7 +62,7 @@ const resolvers = {
       //     }
     },
 
-    deleteBook: async (parent, { user }, { bookId }) => {
+    deleteBook: async (parent, { bookId }, { user }) => {
       const updatedUser = await User.findOneAndUpdate(
         { _id: user._id },
         { $pull: { savedBooks: { bookId } } },

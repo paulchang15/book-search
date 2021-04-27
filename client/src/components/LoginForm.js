@@ -14,6 +14,7 @@ const LoginForm = () => {
   const handleInputChange = (event) => {
     const { name, value } = event.target;
     setUserFormData({ ...userFormData, [name]: value });
+    console.log(userFormData);
   };
 
   const handleFormSubmit = async (event) => {

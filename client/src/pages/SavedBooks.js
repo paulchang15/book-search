@@ -14,39 +14,12 @@ import { useQuery, useMutation } from "@apollo/react-hooks";
 import { GET_ME } from "../utils/queries";
 import { REMOVE_BOOK } from "../utils/mutations";
 const SavedBooks = () => {
-  // const [userData, setUserData] = useState({});
-
-  // // use this to determine if `useEffect()` hook needs to run again
-  // const userDataLength = Object.keys(userData).length;
-
-  // useEffect(() => {
-  //   const getUserData = async () => {
-  //     try {
-  //       const token = Auth.loggedIn() ? Auth.getToken() : null;
-
-  //       if (!token) {
-  //         return false;
-  //       }
-
-  //       const response = await getMe(token);
-
-  //       if (!response.ok) {
-  //         throw new Error("something went wrong!");
-  //       }
-
-  //       const user = await response.json();
-  //       setUserData(user);
-  //     } catch (err) {
-  //       console.error(err);
-  //     }
-  //   };
-
-  //   getUserData();
-  // }, [userDataLength]);
-
   const { loading, data } = useQuery(GET_ME);
-  const [deleteBook, { error }] = useMutation(REMOVE_BOOK);
-  const userData = data;
+  const [deleteBook, { error }] = useMutation(REMOVE_BOOK, {
+    refetchQueries: [{ query: GET_ME }],
+  });
+
+  const userData = data?.me;
   console.log(userData);
   if (loading) {
     return <div>Loading...</div>;
@@ -86,7 +59,7 @@ const SavedBooks = () => {
       <Container>
         {/* may need to add userData.me */}
         <h2>
-          {userData.savedBooks.length
+          {userData?.savedBooks?.length
             ? `Viewing ${userData.savedBooks.length} saved ${
                 userData.savedBooks.length === 1 ? "book" : "books"
               }:`
@@ -94,7 +67,7 @@ const SavedBooks = () => {
         </h2>
         <CardColumns>
           {/* may need to add userData.me */}
-          {userData.savedBooks.map((book) => {
+          {userData?.savedBooks?.map((book) => {
             return (
               <Card key={book.bookId} border="dark">
                 {book.image ? (
